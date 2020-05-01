@@ -1,8 +1,14 @@
 #Files containing sensitive information, such as API keys
 *.json
+
+#.idea folder
+.idea/
+
+#Generated files
+*.pickle
  
 # Byte-compiled / optimized / DLL files
-__pycache__/
+
 *.py[cod]
 *$py.class
 
