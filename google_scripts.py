@@ -4,15 +4,19 @@ import os.path
 from googleapiclient.discovery import build
 from google_auth_oauthlib.flow import InstalledAppFlow
 from google.auth.transport.requests import Request
+from dotenv import load_dotenv
+
 
 # If modifying these scopes, delete the file token.pickle.
-SCOPES = ['https://www.googleapis.com/auth/spreadsheets.readonly']
+SCOPES = ['https://www.googleapis.com/auth/spreadsheets']
 
 # The ID and range of a sample spreadsheet.
+load_dotenv()
 SPREADSHEET_ID = os.getenv('TURNIP_SPREADSHEET_ID')
 RANGE_NAME = 'Stalk Market V2!A3:D13'
+TEST_RANGE = 'test!A1:D13'
 
-def main():
+def api_setup():
     """Shows basic usage of the Sheets API.
     Prints values from a sample spreadsheet.
     """
@@ -43,13 +47,8 @@ def main():
                                 range=RANGE_NAME).execute()
     values = result.get('values', [])
 
+    return sheet
 
-    if not values:
-        print('No data found.')
-    else:
-        print('Data:')
-        for row in values:
-            print('%s,' % (row[0]))
 
 if __name__ == '__main__':
-    main()
+    api_setup()
