@@ -1,5 +1,5 @@
 import os
-import discord
+from discord.ext import commands
 from dotenv import load_dotenv
 import google_scripts
 
@@ -12,20 +12,24 @@ def main():
     # Initialize Google Sheets API connection
     sheet = google_scripts.api_setup()
 
-    client = discord.Client()
+    bot = commands.Bot(command_prefix='!')
 
-    @client.event
+    @bot.event
     async def on_ready():
-        print(f'{client.user} has connected to Discord!')
+        print(f'{bot.user} has connected to Discord!')
+        for guild in bot.guilds:
+            print(guild)
 
-    @client.event
-    async def on_member_join(member):
-        await member.create_dm()
-        await member.dm_channel.send(
-            f'Hi {member.name}, welcome!'
-        )
+    @bot.event
+    async def on_message(message):
+        # check if the message was sent by the bot itself
+        if message.author == bot.user:
+            return
 
-    client.run(TOKEN)
+        if "turnipbot" in message.content.lower():
+            await message.add_reaction('👀')
+
+    bot.run(TOKEN)
 
 
 if __name__ == '__main__':
