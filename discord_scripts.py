@@ -11,6 +11,7 @@ def main():
 
     # Initialize Google Sheets API connection
     sheet = google_scripts.api_setup()
+    usernameToRow = google_scripts.username_init(sheet=sheet)
 
     bot = commands.Bot(command_prefix='!')
 

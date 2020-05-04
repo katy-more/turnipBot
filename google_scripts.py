@@ -13,8 +13,9 @@ SCOPES = ['https://www.googleapis.com/auth/spreadsheets']
 # The ID and range of a sample spreadsheet.
 load_dotenv()
 SPREADSHEET_ID = os.getenv('TURNIP_SPREADSHEET_ID')
-RANGE_NAME = 'Stalk Market V2!A3:D13'
-TEST_RANGE = 'test!A1:D13'
+RANGE_NAME = os.getenv('RANGE_NAME')
+TEST_RANGE = os.getenv('TEST_RANGE')
+
 
 def api_setup():
     """Shows basic usage of the Sheets API.
@@ -48,6 +49,18 @@ def api_setup():
     values = result.get('values', [])
 
     return sheet
+
+def username_init(sheet):
+    result = sheet.values().get(
+        spreadsheetId=SPREADSHEET_ID, range=TEST_RANGE
+    ).execute()
+
+    usernameToRow = {}
+
+    for row in range(len(result.get('values', []))):
+        usernameToRow[result.get('values', [])[row][0]] = row+2
+
+    return usernameToRow
 
 
 if __name__ == '__main__':
