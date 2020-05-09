@@ -11,7 +11,7 @@ def main():
 
     # Initialize Google Sheets API connection
     sheet = google_scripts.api_setup()
-    usernameToRow = google_scripts.username_init(sheet=sheet)
+    google_scripts.username_update(sheet=sheet)
 
     bot = commands.Bot(command_prefix='!')
 
@@ -27,8 +27,19 @@ def main():
         if message.author == bot.user:
             return
 
+        # When someone says turnipbot (case insensitive), turnipbot will
+        # react to the message with the eyes emoji
         if "turnipbot" in message.content.lower():
             await message.add_reaction('👀')
+
+        if str(message.channel) == os.getenv("STALK_CHANNEL"):
+            content = message.content.split(" ")
+            google_scripts.insert_by_username_date(
+                sheet=sheet,
+                username=message.author.name,
+                date=message.created_at,
+                value=content)
+            await message.channel.send(str(message.created_at))
 
     bot.run(TOKEN)
 

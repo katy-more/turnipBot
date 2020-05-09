@@ -13,8 +13,8 @@ SCOPES = ['https://www.googleapis.com/auth/spreadsheets']
 # The ID and range of a sample spreadsheet.
 load_dotenv()
 SPREADSHEET_ID = os.getenv('TURNIP_SPREADSHEET_ID')
-RANGE_NAME = os.getenv('RANGE_NAME')
-TEST_RANGE = os.getenv('TEST_RANGE')
+RANGE_NAME = os.getenv('TEST_RANGE')
+usernameToRow = None
 
 
 def api_setup():
@@ -50,17 +50,83 @@ def api_setup():
 
     return sheet
 
-def username_init(sheet):
+def username_update(sheet):
+    global usernameToRow
+
     result = sheet.values().get(
-        spreadsheetId=SPREADSHEET_ID, range=TEST_RANGE
+        spreadsheetId=SPREADSHEET_ID, range=RANGE_NAME
     ).execute()
 
+    # If usernameToRow has data, delete it and start over
     usernameToRow = {}
 
-    for row in range(len(result.get('values', []))):
-        usernameToRow[result.get('values', [])[row][0]] = row+2
+    # The range starts at 3 to account for blank lines in the
+    # spreadsheet. Different spreadsheets may vary
+    for row in range(3, len(result.get('values', []))):
+        usernameToRow[result.get('values', [])[row][0]] = row+1
+        # TODO: This is hard to read! Fix that at some point ^^^
 
-    return usernameToRow
+def insert_by_username_date(sheet, username, date, value):
+    global usernameToRow
+
+    # create the dict that will align the day of the week to the column
+    # Note: These values are specific to the spreadsheet that I'm
+    # building this spreadsheet around, and may need to be tweaked
+    # for wider use
+    dayToColumn = {
+        1:{# Monday
+            "am":"C",
+            "pm":"D"
+        },
+        2:{# Tuesday
+            "am": "E",
+            "pm": "F"
+        },
+        3:{# Wednesday
+            "am": "G",
+            "pm": "H"
+        },
+        4:{# Thursday
+            "am": "I",
+            "pm": "J"
+        },
+        5:{#Friday
+            "am": "K",
+            "pm": "L"
+        },
+        6:{#Saturday
+            "am": "M",
+            "pm": "N"
+        }
+    }
+
+    # Create the 'values' object that will be passed to the Google API
+    values = [
+        [
+            value[1]
+        ]
+    ]
+
+    # Create the body based on the values
+    body = {
+        'values': values
+    }
+
+    # Create the range based on the parameter data
+    day = None
+    if date.weekday() == 0:  # if the day of the week is Sunday
+        day = "B"
+    else:
+        day = dayToColumn[date.weekday()][value[0]]
+
+    range = "test!" + str(day) + str(usernameToRow[username])
+
+    result = sheet.values().update(
+        spreadsheetId=SPREADSHEET_ID,
+        range = range,
+        valueInputOption = 'RAW',
+        body = body
+    ).execute()
 
 
 if __name__ == '__main__':
